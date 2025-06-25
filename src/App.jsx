@@ -1,32 +1,36 @@
-// import { useState, useEffect, useRef } from 'react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './App.css';
 
-function App() {
-    const [count, setCount] = useState(0);
-    const [buttonName, setButtonName] = useState('Start');
-    // const [buttonChackStateName, setButtonChackStateName] = useState(true);
-    const timeId = useRef(null);
+export default function App() {
+    const [count, setCount] = useState(() => {
+        const saved = localStorage.getItem('timer');
+        return saved ? +saved : 0;
+    });
+
+    const [isName, setButtonName] = useState(true);
+    const timerIdRef = useRef(null);
 
     const onStartTimer = () => {
-        if (buttonName == 'Start') {            
-            timeId.current = setInterval(() => {
+        if (isName) {
+            timerIdRef.current = setInterval(() => {
                 setCount((countPrev) => countPrev + 1);
-                const counterLocal = count;
-                localStorage.setItem('count', counterLocal);
             }, 1000);
-            setButtonName('Stop');
+            setButtonName(false);
         } else {
-            clearInterval(timeId.current);
-            setButtonName('Start');
+            clearInterval(timerIdRef.current);
+            setButtonName(true);
         }
     };
 
+    useEffect(() => {
+        localStorage.setItem('timer', count);
+    }, [count]);
+
     const onResetTimer = () => {
         setCount(0);
-        clearInterval(timeId.current);
-        timeId.current = null;
-        setButtonName('Start');
+        clearInterval(timerIdRef.current);
+        timerIdRef.current = null;
+        setButtonName(true);
     };
 
     return (
@@ -35,7 +39,7 @@ function App() {
             <p className='counter'>{count}</p>
 
             <button className='buttonClass' onClick={onStartTimer}>
-                {buttonName}
+                {isName ? 'start' : 'stop'}
             </button>
             <button className='buttonClass' onClick={onResetTimer}>
                 Reset
@@ -43,5 +47,3 @@ function App() {
         </div>
     );
 }
-
-export default App;
